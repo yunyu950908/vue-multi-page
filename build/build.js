@@ -1,4 +1,3 @@
-
 require('./check-versions')();
 
 process.env.NODE_ENV = 'production';
@@ -14,11 +13,12 @@ const webpackConfig = require('./webpack.prod.conf');
 const spinner = ora('building for production...');
 spinner.start();
 
-rm(path.join(config.build.assetsRoot, config.build.assetsSubDirectory), (err) => {
-  if (err) throw err;
-  webpack(webpackConfig, (err, stats) => {
+// rm(path.join(config.build.assetsRoot, config.build.assetsSubDirectory), err => {
+rm(path.join(config.build.assetsRoot), (err1) => {
+  if (err1) throw err1;
+  webpack(webpackConfig, (err2, stats) => {
     spinner.stop();
-    if (err) throw err;
+    if (err2) throw err2;
     process.stdout.write(`${stats.toString({
       colors: true,
       modules: false,

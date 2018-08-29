@@ -3,6 +3,51 @@ const path = require('path');
 const config = require('../config');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const packageConfig = require('../package.json');
+// dcei change
+const glob = require('glob');
+const merge = require('webpack-merge');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const PAGE_PATH = path.resolve(__dirname, '../src/pages');
+//
+// 多入口配置
+exports.entries = function () {
+  const entryFiles = glob.sync(`${PAGE_PATH}/*/*.js`);
+  const map = {};
+  entryFiles.forEach((filePath) => {
+    const filename = filePath.substring(filePath.lastIndexOf('\/') + 1, filePath.lastIndexOf('.'));
+    map[filename] = filePath;
+  });
+  console.log(map);
+  return map;
+};
+
+// 多页面输出配置
+exports.htmlPlugin = function () {
+  const entryHtml = glob.sync(`${PAGE_PATH}/*/*.html`);
+  const arr = [];
+  entryHtml.forEach((filePath) => {
+    const filename = filePath.substring(filePath.lastIndexOf('\/') + 1, filePath.lastIndexOf('.'));
+    let conf = {
+      template: filePath,
+      filename: `${filename}.html`,
+      chunks: [filename],
+      inject: true,
+    };
+    if (process.env.NODE_ENV === 'production') {
+      conf = merge(conf, {
+        chunks: ['manifest', 'vendor', filename],
+        minify: {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeAttributeQuotes: true,
+        },
+        chunksSortMode: 'dependency',
+      });
+    }
+    arr.push(new HtmlWebpackPlugin(conf));
+  });
+  return arr;
+};
 
 exports.assetsPath = function (_path) {
   const assetsSubDirectory = process.env.NODE_ENV === 'production'
